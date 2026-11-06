@@ -1,45 +1,33 @@
 # Lens
 
-CPU-only image-region OCR service for Citadel extensions, with HTTP and MCP on
-port **8093**. `fast` uses standard English `tessdata_fast`; `accurate` uses
-English `tessdata_best`. **Every extraction request accepts `mode`; omission
-always defaults to `accurate`.** No GPU, LLM, hosted OCR API, or inference network
-call is involved. Accurate names a model choice, not a guarantee of fewer errors.
+Image-region OCR service for Citadel extensions, with HTTP and MCP on port **8093**. Lens cuts the regions,
+preprocesses them and keeps uploads, jobs, quota and its own result cache; **the recognition itself runs on a
+`TesseractModel` service** (`AI/ModelServices/TesseractModel`, port 9260). `fast` uses English `tessdata_fast`;
+`accurate` uses English `tessdata_best`. **Every extraction request accepts `mode`; omission always defaults to
+`accurate`.** No GPU, LLM or hosted OCR API is involved. Accurate names a model choice, not a guarantee of fewer errors.
 
-This is separate from sibling Reader, which uses a remote GPU model.
-Citadel's existing image CLI remains available. Extension registration is a later step.
+This is separate from sibling Reader, which uses a remote GPU model. Citadel's existing image CLI remains available.
+Extension registration is a later step.
 
-## Windows setup
+## Setup
 
-Run from `D:\User\Documents\Programming\AI\ToolServices\Lens`:
+1. Run a `TesseractModel` service, create a token for Lens on its `/admin/`, and press **Download new weights** there.
+2. Run Lens from `D:\User\Documents\Programming\AI\ToolServices\Lens` with `LENS_ADMIN_PASSWORD` set:
 
 ```powershell
 uv sync
-# Install Tesseract separately if not installed already:
-# winget install --id UB-Mannheim.Lens --exact
-$env:TESSERACT_CMD = 'C:\Program Files\Tesseract-OCR\tesseract.exe'
-uv run python -m src.models
 uv run python -m src.run
 ```
 
-The explicit model setup command downloads both official English models and
-checks pinned SHA-256 digests before atomically installing them in
-`.data/models/fast` and `.data/models/accurate`. It never installs the Tesseract
-binary. Existing valid model files are reused. Missing binary/models yield
-readiness false and clear extraction errors; accurate never silently falls back
-to fast. Both models must be ready for `/health` readiness to be true.
+3. Open `http://127.0.0.1:8093/admin/`, save a connection to the TesseractModel address and token, and pick it in
+**Text recognition**. **Test connection** lists the modes the service can answer. Without a saved connection extraction
+fails with a clear message and `/health` says `ready: false`. The address and token live only on the admin page, so Lens
+needs `LENS_ADMIN_PASSWORD` to be configured at all.
 
-Models are selected with per-call `--tessdata-dir` arguments, so simultaneous
-fast/accurate requests are isolated even if `TESSDATA_PREFIX` is set elsewhere.
-Only English is currently provided. Install additional languages only when API
-support is added; changing `TESSDATA_PREFIX` does not select these service models.
+Readiness needs both modes available on the model service. `accurate` never silently falls back to `fast`. Lens's
+result cache key includes the model service's fingerprint of the model file, so a changed model never serves old text.
 
-With pytesseract 0.3.13 on Windows, model directory paths must contain no spaces
-(its config parser preserves literal quote characters). The default project path
-works. If your checkout path has spaces, set `LENS_FAST_TESSDATA_DIR` and
-`LENS_ACCURATE_TESSDATA_DIR` to separate whitespace-free directories before model
-setup and startup. Uploaded image filenames may contain spaces. Linux/Docker
-model directories support spaces through normal POSIX argument quoting.
+The service reads process environment only; it does not load a local `.env` file.
 
 The service reads process environment only; it does not load a local `.env` file.
 For authenticated use, set `INTERNAL_API_TOKEN`; `LENS_HOST=0.0.0.0` without it
@@ -231,8 +219,7 @@ separate from the ordinary internal token. Saved settings live in
 `.data/settings.json`; file access runs in worker threads. Concurrency and admitted
 job limits are marked restart-required. Retention changes apply to new uploads.
 
-The model-service routing section has no remote slots: both OCR models run here.
-No unused remote GPU/LLM connectors were added. Usage resets on restart.
+The model-service section has one slot, `ocr`, with a saved connection list (shared with Reader's admin page). No unused remote GPU/LLM connectors were added. Usage resets on restart.
 
 Uploads and completed cached results are scoped to requester and retained for
 24 hours. Quota counts uploaded bytes plus cached JSON. Duplicate uploads reuse
@@ -246,10 +233,6 @@ Models and uploads stay in `.data` and are not committed or packaged into source
 | `LENS_HOST`, `LENS_PORT` | `127.0.0.1`, `8093` | Bind address |
 | `INTERNAL_API_TOKEN` | empty | Required on non-loopback binds |
 | `LENS_ADMIN_PASSWORD` | empty | Admin disabled until set |
-| `TESSERACT_CMD` | `tesseract` | Binary path or PATH-resolved command |
-| `LENS_DATA_DIR` | project `.data` | SQLite, models and saved settings |
-| `LENS_FAST_TESSDATA_DIR` | `.data/models/fast` | Explicit fast English model directory |
-| `LENS_ACCURATE_TESSDATA_DIR` | `.data/models/accurate` | Explicit best English model directory |
 | `LENS_MAX_UPLOAD_MB` | `10` | Per-upload byte bound |
 | `LENS_MAX_PIXELS` | `16000000` | Decoded pixel bound |
 | `LENS_MAX_REGIONS` | `32` | Boxes per extraction, schema maximum 256 |
@@ -257,12 +240,11 @@ Models and uploads stay in `.data` and are not committed or packaged into source
 | `LENS_TIMEOUT_S` | `110` | Job deadline, including queued worker time |
 | `LENS_TTL_HOURS` | `24` | Retention for new uploads and attached cache |
 | `LENS_QUOTA_MB` | `200` | Stored bytes per requester |
-| `LENS_CONCURRENCY` | `2` | Global CPU OCR slots, shared by both modes |
+| `LENS_CONCURRENCY` | `2` | Global calls to the model service at once, shared by both modes |
 | `LENS_MAX_JOBS` | `4` | Admitted jobs including upload validation; excess is 503 |
 
 One process owns these limits. Use one uvicorn worker; replicas each have their
-own CPU pool. In containers `OMP_THREAD_LIMIT=1` also bounds internal Tesseract
-OpenMP threads. Network server connection concurrency is capped at 32.
+own limit. Network server connection concurrency is capped at 32.
 
 ## Docker deployment
 
@@ -273,11 +255,10 @@ docker compose up -d --build
 ```
 
 The external `citadel_core` network must exist (start Citadel stack first, or
-create that network for standalone testing). Image installs CPU Tesseract and
-both verified model files during build, runs as an unprivileged user, and mounts
-`ocr_data` for runtime uploads/settings. No GPU runtime or host Python required.
-Default published port is loopback-only; set `LENS_BIND` for your deployment.
-Model downloads require network during setup/build; OCR works offline afterward.
+create that network for standalone testing). The image holds no OCR program or model, runs as an unprivileged user,
+and mounts `ocr_data` for runtime uploads, settings and the saved model connection. The TesseractModel service must be
+reachable from the container (join its network, or use a host address). Default published port is loopback-only; set
+`LENS_BIND` for your deployment.
 
 Docker daemon was unavailable on the development machine, so image build and
 container runtime remain unverified. Native Windows CPU paths are tested.
@@ -296,18 +277,12 @@ uv run pytest -q -rs
 uv run ruff check src tests
 ```
 
-Most tests use a deterministic engine and need no binary/model. Real generated-text
-tests cover both models after setup; skip with a reason when prerequisites are
-missing. Tests exercise HTTP and real MCP handshakes, live SSE delivery before
+Tests use a deterministic engine or a fake model service and need no Tesseract. They exercise HTTP and real MCP handshakes, live SSE delivery before
 later regions finish, auth/ownership, mode isolation/defaults, exact crops,
 confidence, cache, quota, expiry, thread limits and cancellation.
 
 ## Model sources and license
 
-English weights come from official [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast)
-and [tessdata_best](https://github.com/tesseract-ocr/tessdata_best), under Apache-2.0.
-See [upstream license](https://github.com/tesseract-ocr/tessdata_best/blob/main/LICENSE).
-Full model license and attribution ship in `MODEL-LICENSE.txt` and `MODEL-NOTICE.md`.
-`src/models.py` pins file hashes; intentional weight upgrades must update hashes
-and rerun the recognition comparison. For binary installation see
-[Tesseract's installation documentation](https://tesseract-ocr.github.io/tessdoc/Installation.html).
+Lens ships no model. The English weights, their pinned hashes and the license notices (`MODEL-LICENSE.txt`, `MODEL-NOTICE.md`,
+Apache-2.0 from [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast) and
+[tessdata_best](https://github.com/tesseract-ocr/tessdata_best)) belong to `AI/ModelServices/TesseractModel`.

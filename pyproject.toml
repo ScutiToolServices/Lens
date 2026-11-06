@@ -1,7 +1,7 @@
 [project]
 name = "lens"
 version = "0.1.0"
-description = "CPU image-region OCR over HTTP and MCP with fast and accurate models"
+description = "Image-region OCR over HTTP and MCP; recognition runs on a TesseractModel service"
 requires-python = ">=3.11"
 dependencies = [
     "mcp==1.28.0",
@@ -9,7 +9,6 @@ dependencies = [
     "uvicorn==0.49.0",
     "starlette>=0.40,<1",
     "Pillow>=10,<13",
-    "pytesseract==0.3.13",
     "httpx>=0.27,<1",
     "anyio>=4.5,<5",
 ]

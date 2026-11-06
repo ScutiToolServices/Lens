@@ -8,6 +8,7 @@ __pycache__/
 .uv-cache/
 *.egg-info/
 .env*
+!.env.example
 secrets/
 .secrets/
 dist/

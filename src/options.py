@@ -25,7 +25,10 @@ def make_config(settings: Settings) -> Config | None:
     schema.append(Setting("timeout_s", "Job time limit (seconds)", "float", settings.timeout_s,
                           minimum=0.1, maximum=110,
                           help="Includes queued OCR work. Keep below Citadel's 120-second tool timeout."))
-    return Config(settings.data_dir / "settings.json", schema)
+    schema.append(Setting("data_path", "Data folder", "text", "", restart=True,
+                          help=f"Where the result cache and uploads go. Empty = {settings.state_dir}. Applies after a restart; "
+                               "files already stored are not moved. Settings and the saved model connection stay in the standard folder."))
+    return Config(settings.state_dir / "settings.json", schema)
 
 
 async def snapshot(base: Settings, config: Config | None) -> Settings:
@@ -34,6 +37,6 @@ async def snapshot(base: Settings, config: Config | None) -> Settings:
         return base
 
     def resolve():
-        return replace(base, **{row["key"]: row["value"] for row in config.describe()})
+        return replace(base, **{row["key"]: row["value"] for row in config.describe() if row["key"] != "data_path"})
 
     return await in_thread(resolve)

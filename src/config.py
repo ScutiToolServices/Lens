@@ -1,6 +1,8 @@
 """Environment-only configuration; credentials are never read from project files."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+import json
+import logging
 import os
 from pathlib import Path
 
@@ -14,9 +16,7 @@ class Settings:
     internal_token: str = ""
     admin_password: str = ""
     data_dir: Path = PROJECT_DIR / ".data"
-    tesseract_cmd: str = "tesseract"
-    fast_dir: Path | None = None
-    accurate_dir: Path | None = None
+    config_dir: Path | None = None  # set when the data folder was moved: the folder that keeps settings.json
     max_bytes: int = 10 * 1024 * 1024
     max_pixels: int = 16_000_000
     max_regions: int = 32
@@ -38,23 +38,21 @@ class Settings:
             raise ValueError("max_regions cannot exceed 256")
 
     @property
+    def state_dir(self) -> Path:
+        """Where settings.json and backends.json live: the first data folder, even after the data folder was moved."""
+        return self.config_dir or self.data_dir
+
+    @property
     def exposed_without_token(self):
         return self.host not in {"localhost", "127.0.0.1", "::1"} and not self.internal_token
 
-    def model_dir(self, mode: str) -> Path:
-        override = self.fast_dir if mode == "fast" else self.accurate_dir
-        return override or self.data_dir / "models" / mode
 
-
-def load_settings() -> Settings:
+def _from_environment() -> Settings:
     env = os.environ.get
     return Settings(
         host=env("LENS_HOST", "127.0.0.1"), port=int(env("LENS_PORT", "8093")),
         internal_token=env("INTERNAL_API_TOKEN", ""), admin_password=env("LENS_ADMIN_PASSWORD", ""),
         data_dir=Path(env("LENS_DATA_DIR", str(PROJECT_DIR / ".data"))),
-        tesseract_cmd=env("TESSERACT_CMD", "tesseract"),
-        fast_dir=Path(env("LENS_FAST_TESSDATA_DIR")) if env("LENS_FAST_TESSDATA_DIR") else None,
-        accurate_dir=Path(env("LENS_ACCURATE_TESSDATA_DIR")) if env("LENS_ACCURATE_TESSDATA_DIR") else None,
         max_bytes=int(float(env("LENS_MAX_UPLOAD_MB", "10")) * 1024 * 1024),
         max_pixels=int(env("LENS_MAX_PIXELS", "16000000")), max_regions=int(env("LENS_MAX_REGIONS", "32")),
         max_result_chars=int(env("LENS_MAX_RESULT_CHARS", "250000")), timeout_s=float(env("LENS_TIMEOUT_S", "110")),
@@ -62,3 +60,31 @@ def load_settings() -> Settings:
         quota_bytes=int(env("LENS_QUOTA_MB", "200")) * 1024 * 1024,
         concurrency=int(env("LENS_CONCURRENCY", "2")), max_jobs=int(env("LENS_MAX_JOBS", "4")),
     )
+
+
+def with_saved_data_path(settings: Settings) -> Settings:
+    """The admin page's "Data folder" setting moves stored data (audio, uploads, voices, results) to another folder.
+    It is read once, here at start. Settings and saved model connections stay in the first folder, which is where this
+    value is saved. A folder that cannot be written is ignored."""
+    try:
+        saved = json.loads((settings.data_dir / "settings.json").read_text("utf-8")).get("data_path")
+    except (OSError, ValueError, AttributeError):
+        return settings
+    if not isinstance(saved, str) or not saved.strip():
+        return settings
+    target = Path(saved.strip()).expanduser()
+    if not target.is_absolute():
+        target = PROJECT_DIR / target
+    try:
+        target.mkdir(parents=True, exist_ok=True)
+        probe = target / ".write-test"
+        probe.write_text("x")
+        probe.unlink()
+    except OSError:
+        logging.getLogger(__name__).warning("Data folder %s cannot be written; using %s", target, settings.data_dir)
+        return settings
+    return replace(settings, data_dir=target, config_dir=settings.data_dir)
+
+
+def load_settings() -> Settings:
+    return with_saved_data_path(_from_environment())

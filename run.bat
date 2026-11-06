@@ -1,7 +1,7 @@
 @echo off
 REM Starts the Lens service on port 8093 (syncs .venv with uv on each run).
 REM LABEL: Lens Service
-REM DESCRIPTION: Tesseract OCR HTTP and MCP tool server (CPU only, fast and accurate modes).
+REM DESCRIPTION: Image OCR HTTP and MCP tool server; recognition runs on a TesseractModel service.
 
 cd /d "%~dp0"
 
@@ -13,12 +13,5 @@ if errorlevel 1 (
 )
 call .venv\Scripts\activate.bat
 
-if not defined TESSERACT_CMD if exist "C:\Program Files\Tesseract-OCR\tesseract.exe" set "TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe"
-python -m src.models
-if errorlevel 1 (
-    echo Model download failed. Install Tesseract: winget install --id UB-Mannheim.Lens --exact
-    pause
-    exit /b 1
-)
 python -m src.run
 pause
