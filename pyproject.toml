@@ -1,0 +1,40 @@
+[project]
+name = "lens"
+version = "0.1.0"
+description = "CPU image-region OCR over HTTP and MCP with fast and accurate models"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp==1.28.0",
+    "pydantic==2.13.4",
+    "uvicorn==0.49.0",
+    "starlette>=0.40,<1",
+    "Pillow>=10,<13",
+    "pytesseract==0.3.13",
+    "httpx>=0.27,<1",
+    "anyio>=4.5,<5",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.24", "ruff>=0.9"]
+
+[project.scripts]
+tesseract-ocr-service = "src.run:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

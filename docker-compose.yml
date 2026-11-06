@@ -1,0 +1,30 @@
+name: tesseract-ocr
+
+services:
+  tesseract-ocr:
+    build: .
+    restart: unless-stopped
+    environment:
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?set INTERNAL_API_TOKEN for this service}
+      LENS_ADMIN_PASSWORD: ${LENS_ADMIN_PASSWORD:-}
+      LENS_CONCURRENCY: ${LENS_CONCURRENCY:-2}
+      LENS_MAX_JOBS: ${LENS_MAX_JOBS:-4}
+      LENS_TIMEOUT_S: ${LENS_TIMEOUT_S:-110}
+    ports:
+      - "${LENS_BIND:-127.0.0.1}:${LENS_PORT:-8093}:8093"
+    volumes:
+      - ocr_data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request; r=json.load(urllib.request.urlopen('http://127.0.0.1:8093/health',timeout=5)); raise SystemExit(0 if r['ready'] else 1)"]
+      interval: 15s
+      timeout: 6s
+      start_period: 20s
+    networks: [citadel]
+
+volumes:
+  ocr_data:
+
+networks:
+  citadel:
+    name: citadel_core
+    external: true

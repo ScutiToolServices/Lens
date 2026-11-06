@@ -1,0 +1,16 @@
+.git
+.venv
+.data
+.output
+.uv-cache
+.pytest_cache
+.ruff_cache
+__pycache__
+**/__pycache__
+tests
+docs
+.env*
+secrets
+.secrets
+*.key
+*.pem
