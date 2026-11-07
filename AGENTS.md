@@ -8,7 +8,7 @@ This file is the one instruction file for every coding agent; `CLAUDE.md` only i
 ## Commands (from this folder, managed by uv)
 - Install: `uv sync` (on this machine the test environment is `UV_PROJECT_ENVIRONMENT=.venv_chk`)
 - Test: `uv run pytest -q`
-- Run: `run.bat run`, or `uv run python -m src.run`, or `docker compose up -d --build`
+- Run: `run.bat run`, or `uv run python -m src.run` (add `--dotenv` to load `.env`), or `docker compose up -d --build`
 
 ## Rules
 - Follow the `tool-service-parity` skill and `AI/ToolServices/_docs/SHARED-FEATURES.md` (what must match in every tool service) and `AI/ToolServices/_docs/SERVICE-SPECIFIC.md` (what differs on purpose). A change to a shared feature goes to every tool service; a new difference goes into `SERVICE-SPECIFIC.md` in the same change.
