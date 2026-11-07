@@ -283,6 +283,12 @@ confidence, cache, quota, expiry, thread limits and cancellation.
 
 ## Model sources and license
 
-Lens ships no model. The English weights, their pinned hashes and the license notices (`MODEL-LICENSE.txt`, `MODEL-NOTICE.md`,
+Lens ships no model. The English weights, their pinned hashes and the license notices (`MODEL-LICENSE.txt`, `docs/model-notice.md`,
 Apache-2.0 from [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast) and
 [tessdata_best](https://github.com/tesseract-ocr/tessdata_best)) belong to `AI/ModelServices/TesseractModel`.
+
+## Documentation
+
+- [Admin page guide](docs/guide-web-ui.md)
+- [Deployment](deployment.md)
+- [Changelog](CHANGELOG.md)

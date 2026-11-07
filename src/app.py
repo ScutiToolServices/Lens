@@ -73,6 +73,44 @@ async def bounded_body(request: Request, limit: int) -> bytes:
     return bytes(data)
 
 
+CONNECT = {
+    "host": "tesseract-ocr",
+    "port": 8093,
+    "paths": [
+        {
+            "label": "MCP, for Armory",
+            "method": "POST",
+            "path": "/mcp"
+        },
+        {
+            "label": "Upload image",
+            "method": "POST",
+            "path": "/api/files"
+        },
+        {
+            "label": "Extract",
+            "method": "POST",
+            "path": "/api/extract"
+        },
+        {
+            "label": "Extract, streamed",
+            "method": "POST",
+            "path": "/api/extract/stream"
+        },
+        {
+            "label": "Modes",
+            "method": "GET",
+            "path": "/api/modes"
+        },
+        {
+            "label": "Health, no token",
+            "method": "GET",
+            "path": "/health"
+        }
+    ]
+}
+
+
 def build_app(settings: Settings, engine: OcrEngine | None = None):
     if settings.exposed_without_token:
         raise ValueError("An internal token is required when LENS_HOST is not loopback.")
@@ -243,7 +281,7 @@ def build_app(settings: Settings, engine: OcrEngine | None = None):
                   for mode, ready in available.items()]]
 
     if config is not None:
-        register(mcp, service="Lens", admin_password=settings.admin_password, usage=usage,
+        register(mcp, connect=CONNECT, service="Lens", admin_password=settings.admin_password, usage=usage,
                  backends=backends, status=status, playground=PLAYGROUND,
                  slots=[Slot("ocr", "Text recognition", "The TesseractModel service that runs Tesseract on its CPU. Lens cuts the regions and sends each one as an image; it holds no OCR model itself.", probe_modes, "http://127.0.0.1:9260", local=False)])
         admin_lock = asyncio.Lock()
