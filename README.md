@@ -12,7 +12,7 @@ Extension registration is a later step.
 ## Setup
 
 1. Run a `OCR_Tesseract_Model` service, create a token for Lens on its `/admin/`, and press **Download new weights** there.
-2. Run Lens from `D:\User\Documents\Programming\AI\ToolServices\Lens` with `LENS_ADMIN_PASSWORD` set:
+2. Run Lens from `D:\User\Documents\Programming\AI\ToolServices\Lens` with `SERVICE_ADMIN_PASSWORD` set:
 
 ```powershell
 uv sync
@@ -22,7 +22,7 @@ uv run python -m src.run
 3. Open `http://127.0.0.1:29403/admin/`, save a connection to the OCR_Tesseract_Model address and token, and pick it in
 **Text recognition**. **Test connection** lists the modes the service can answer. Without a saved connection extraction
 fails with a clear message and `/health` says `ready: false`. The address and token live only on the admin page, so Lens
-needs `LENS_ADMIN_PASSWORD` to be configured at all.
+needs `SERVICE_ADMIN_PASSWORD` to be configured at all.
 
 Readiness needs both modes available on the model service. `accurate` never silently falls back to `fast`. Lens's
 result cache key includes the model service's fingerprint of the model file, so a changed model never serves old text.
@@ -30,7 +30,7 @@ result cache key includes the model service's fingerprint of the model file, so 
 The service reads process environment only; it does not load a local `.env` file.
 
 The service reads process environment only; it does not load a local `.env` file.
-For authenticated use, set `INTERNAL_API_TOKEN`; `LENS_HOST=0.0.0.0` without it
+For authenticated use, set `INTERNAL_API_TOKEN`; `SERVICE_HOST=0.0.0.0` without it
 is refused. The default is loopback-only.
 
 ## HTTP contract
@@ -161,7 +161,7 @@ schema errors are also ordinary JSON responses.
 This is real **region-level streaming**, not word/token streaming. One whole-image
 region yields its text after that image finishes. Multiple crops can complete out
 of order; use `index`. Cached results stream immediately. Disable proxy buffering
-and keep upstream read timeouts above `LENS_TIMEOUT_S`. Disconnect cancellation stops
+and keep upstream read timeouts above `SERVICE_TIMEOUT_S`. Disconnect cancellation stops
 scheduling further regions; already-started OCR threads drain and retain their CPU
 slots until they exit. No incomplete result is cached.
 
@@ -212,7 +212,7 @@ requests themselves do not open an interactive prompt.
 
 ## Admin and operational parity
 
-Set `LENS_ADMIN_PASSWORD`, restart, then open `/admin/`. Shared peer admin shell
+Set `SERVICE_ADMIN_PASSWORD`, restart, then open `/admin/`. Shared peer admin shell
 provides status, per-requester usage/errors/average latency, editable limits and
 an upload playground with fast/accurate choice. Admin API uses `X-Admin-Password`,
 separate from the ordinary internal token. Saved settings live in
@@ -230,18 +230,18 @@ Models and uploads stay in `.data` and are not committed or packaged into source
 
 | Environment | Default | Purpose |
 | --- | --- | --- |
-| `LENS_HOST`, `LENS_PORT` | `127.0.0.1`, `29403` | Bind address |
+| `SERVICE_HOST`, `SERVICE_PORT` | `127.0.0.1`, `29403` | Bind address |
 | `INTERNAL_API_TOKEN` | empty | Required on non-loopback binds |
-| `LENS_ADMIN_PASSWORD` | empty | Admin disabled until set |
-| `LENS_MAX_UPLOAD_MB` | `10` | Per-upload byte bound |
-| `LENS_MAX_PIXELS` | `16000000` | Decoded pixel bound |
-| `LENS_MAX_REGIONS` | `32` | Boxes per extraction, schema maximum 256 |
-| `LENS_MAX_RESULT_CHARS` | `250000` | Combined OCR output character cap |
-| `LENS_TIMEOUT_S` | `110` | Job deadline, including queued worker time |
-| `LENS_TTL_HOURS` | `24` | Retention for new uploads and attached cache |
-| `LENS_QUOTA_MB` | `200` | Stored bytes per requester |
-| `LENS_CONCURRENCY` | `2` | Global calls to the model service at once, shared by both modes |
-| `LENS_MAX_JOBS` | `4` | Admitted jobs including upload validation; excess is 503 |
+| `SERVICE_ADMIN_PASSWORD` | empty | Admin disabled until set |
+| `SERVICE_MAX_UPLOAD_MB` | `10` | Per-upload byte bound |
+| `SERVICE_MAX_PIXELS` | `16000000` | Decoded pixel bound |
+| `SERVICE_MAX_REGIONS` | `32` | Boxes per extraction, schema maximum 256 |
+| `SERVICE_MAX_RESULT_CHARS` | `250000` | Combined OCR output character cap |
+| `SERVICE_TIMEOUT_S` | `110` | Job deadline, including queued worker time |
+| `SERVICE_TTL_HOURS` | `24` | Retention for new uploads and attached cache |
+| `SERVICE_QUOTA_MB` | `200` | Stored bytes per requester |
+| `SERVICE_CONCURRENCY` | `2` | Global calls to the model service at once, shared by both modes |
+| `SERVICE_MAX_JOBS` | `4` | Admitted jobs including upload validation; excess is 503 |
 
 One process owns these limits. Use one uvicorn worker; replicas each have their
 own limit. Network server connection concurrency is capped at 32.
@@ -250,7 +250,7 @@ own limit. Network server connection concurrency is capped at 32.
 
 ```powershell
 $env:INTERNAL_API_TOKEN = 'choose-a-service-token'
-$env:LENS_ADMIN_PASSWORD = 'choose-an-admin-password'
+$env:SERVICE_ADMIN_PASSWORD = 'choose-an-admin-password'
 docker compose up -d --build
 ```
 
@@ -258,7 +258,7 @@ The external `citadel_core` network must exist (start Citadel stack first, or
 create that network for standalone testing). The image holds no OCR program or model, runs as an unprivileged user,
 and mounts `ocr_data` for runtime uploads, settings and the saved model connection. The OCR_Tesseract_Model service must be
 reachable from the container (join its network, or use a host address). Default published port is loopback-only; set
-`LENS_BIND` for your deployment.
+`SERVICE_BIND` for your deployment.
 
 Docker daemon was unavailable on the development machine, so image build and
 container runtime remain unverified. Native Windows CPU paths are tested.

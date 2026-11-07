@@ -113,7 +113,7 @@ CONNECT = {
 
 def build_app(settings: Settings, engine: OcrEngine | None = None):
     if settings.exposed_without_token:
-        raise ValueError("An internal token is required when LENS_HOST is not loopback.")
+        raise ValueError("An internal token is required when SERVICE_HOST is not loopback.")
     config = make_config(settings)
     backends = Backends(settings.state_dir / "backends.json")
     engine = engine or RemoteOcrEngine(backends)

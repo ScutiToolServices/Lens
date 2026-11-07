@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+### Breaking: common service environment variables
+
+Service-owned environment variables now use `SERVICE_*`. Old names are no longer read.
+Rename old names once in your real `.env`, Compose `environment:` block, and CI/secret settings.
+
+| Old name | New name |
+|---|---|
+| `LENS_ADMIN_PASSWORD` | `SERVICE_ADMIN_PASSWORD` |
+| `LENS_BIND` | `SERVICE_BIND` |
+| `LENS_CONCURRENCY` | `SERVICE_CONCURRENCY` |
+| `LENS_DATA_DIR` | `SERVICE_DATA_DIR` |
+| `LENS_HOST` | `SERVICE_HOST` |
+| `LENS_MAX_JOBS` | `SERVICE_MAX_JOBS` |
+| `LENS_MAX_PIXELS` | `SERVICE_MAX_PIXELS` |
+| `LENS_MAX_REGIONS` | `SERVICE_MAX_REGIONS` |
+| `LENS_MAX_RESULT_CHARS` | `SERVICE_MAX_RESULT_CHARS` |
+| `LENS_MAX_UPLOAD_MB` | `SERVICE_MAX_UPLOAD_MB` |
+| `LENS_PORT` | `SERVICE_PORT` |
+| `LENS_QUOTA_MB` | `SERVICE_QUOTA_MB` |
+| `LENS_TIMEOUT_S` | `SERVICE_TIMEOUT_S` |
+| `LENS_TTL_HOURS` | `SERVICE_TTL_HOURS` |
+
 - Default service port moves from 8093 to 29403. Update any explicit port in your real `.env`, saved model-service connections in `backends.json`, and browser or MCP client configurations once; model-service connection ports also move to the new model port blocks. Docker users who used the Compose default receive the new host and container ports together; explicit host-port overrides remain in effect until changed.
 - Model connection labels, Docker CONNECT hosts and documentation use the purpose-prefixed model-service names. Update saved model-service connections to the renamed load balancer hosts using the current connection defaults.
 

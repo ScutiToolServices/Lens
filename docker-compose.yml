@@ -11,12 +11,12 @@ services:
     restart: unless-stopped
     environment:
       INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?set INTERNAL_API_TOKEN for this service}
-      LENS_ADMIN_PASSWORD: ${LENS_ADMIN_PASSWORD:-}
-      LENS_CONCURRENCY: ${LENS_CONCURRENCY:-2}
-      LENS_MAX_JOBS: ${LENS_MAX_JOBS:-4}
-      LENS_TIMEOUT_S: ${LENS_TIMEOUT_S:-110}
+      SERVICE_ADMIN_PASSWORD: ${SERVICE_ADMIN_PASSWORD:-}
+      SERVICE_CONCURRENCY: ${SERVICE_CONCURRENCY:-2}
+      SERVICE_MAX_JOBS: ${SERVICE_MAX_JOBS:-4}
+      SERVICE_TIMEOUT_S: ${SERVICE_TIMEOUT_S:-110}
     ports:
-      - "${LENS_BIND:-127.0.0.1}:${LENS_PORT:-29403}:29403"
+      - "${SERVICE_BIND:-127.0.0.1}:${SERVICE_PORT:-29403}:29403"
     volumes:
       - ocr_data:/data
     healthcheck:

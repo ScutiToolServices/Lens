@@ -50,15 +50,15 @@ class Settings:
 def _from_environment() -> Settings:
     env = os.environ.get
     return Settings(
-        host=env("LENS_HOST", "127.0.0.1"), port=int(env("LENS_PORT", "29403")),
-        internal_token=env("INTERNAL_API_TOKEN", ""), admin_password=env("LENS_ADMIN_PASSWORD", ""),
-        data_dir=Path(env("LENS_DATA_DIR", str(PROJECT_DIR / ".data"))),
-        max_bytes=int(float(env("LENS_MAX_UPLOAD_MB", "10")) * 1024 * 1024),
-        max_pixels=int(env("LENS_MAX_PIXELS", "16000000")), max_regions=int(env("LENS_MAX_REGIONS", "32")),
-        max_result_chars=int(env("LENS_MAX_RESULT_CHARS", "250000")), timeout_s=float(env("LENS_TIMEOUT_S", "110")),
-        ttl_seconds=int(env("LENS_TTL_HOURS", "24")) * 3600,
-        quota_bytes=int(env("LENS_QUOTA_MB", "200")) * 1024 * 1024,
-        concurrency=int(env("LENS_CONCURRENCY", "2")), max_jobs=int(env("LENS_MAX_JOBS", "4")),
+        host=env("SERVICE_HOST", "127.0.0.1"), port=int(env("SERVICE_PORT", "29403")),
+        internal_token=env("INTERNAL_API_TOKEN", ""), admin_password=env("SERVICE_ADMIN_PASSWORD", ""),
+        data_dir=Path(env("SERVICE_DATA_DIR", str(PROJECT_DIR / ".data"))),
+        max_bytes=int(float(env("SERVICE_MAX_UPLOAD_MB", "10")) * 1024 * 1024),
+        max_pixels=int(env("SERVICE_MAX_PIXELS", "16000000")), max_regions=int(env("SERVICE_MAX_REGIONS", "32")),
+        max_result_chars=int(env("SERVICE_MAX_RESULT_CHARS", "250000")), timeout_s=float(env("SERVICE_TIMEOUT_S", "110")),
+        ttl_seconds=int(env("SERVICE_TTL_HOURS", "24")) * 3600,
+        quota_bytes=int(env("SERVICE_QUOTA_MB", "200")) * 1024 * 1024,
+        concurrency=int(env("SERVICE_CONCURRENCY", "2")), max_jobs=int(env("SERVICE_MAX_JOBS", "4")),
     )
 
 
