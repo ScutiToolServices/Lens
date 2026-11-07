@@ -15,7 +15,7 @@ MODES = {"fast": {"available": True, "fingerprint": "tesseract-tsv-v1|fast|aaa"}
          "accurate": {"available": True, "fingerprint": "tesseract-tsv-v1|accurate|bbb"}}
 
 
-def engine_for(tmp_path, handler, url="http://ocr:9260", token="tok"):
+def engine_for(tmp_path, handler, url="http://ocr:29261", token="tok"):
     backends = Backends(tmp_path / "backends.json")
     if url:
         backends.set("ocr", url, token)
@@ -79,7 +79,7 @@ def test_refusals_become_safe_messages(tmp_path, code, error, words):
     engine = engine_for(tmp_path, service(ocr=lambda request: httpx.Response(code, text="secret /srv/path http://private")))
     with pytest.raises(error, match=words) as caught:
         engine.recognize(Image.new("RGB", (4, 4)), "fast", 5)
-    assert "secret" not in str(caught.value) and "ocr:9260" not in str(caught.value)
+    assert "secret" not in str(caught.value) and "ocr:29261" not in str(caught.value)
 
 
 def test_connection_errors_and_odd_answers_are_safe(tmp_path):
@@ -97,7 +97,7 @@ def test_a_saved_connection_change_applies_to_the_next_call(tmp_path):
     seen = []
     engine = engine_for(tmp_path, service(seen))
     engine.recognize(Image.new("RGB", (4, 4)), "fast", 5)
-    engine.backends.set("ocr", "http://other:9260", "t2")
+    engine.backends.set("ocr", "http://other:29261", "t2")
     engine.recognize(Image.new("RGB", (4, 4)), "fast", 5)
     assert [r.url.host for r in seen if r.url.path == "/v1/ocr"] == ["ocr", "other"]
 
@@ -106,8 +106,8 @@ async def test_probe_reports_the_ready_modes(monkeypatch):
     real = httpx.AsyncClient
     transport = httpx.MockTransport(lambda request: httpx.Response(200, json={"modes": MODES}))
     monkeypatch.setattr("src.admin_api.httpx.AsyncClient", lambda **kwargs: real(transport=transport))
-    assert "accurate, fast" in await probe_modes("http://ocr:9260", "tok")
+    assert "accurate, fast" in await probe_modes("http://ocr:29261", "tok")
     bad = httpx.MockTransport(lambda request: httpx.Response(200, json={"nope": 1}))
     monkeypatch.setattr("src.admin_api.httpx.AsyncClient", lambda **kwargs: real(transport=bad))
     with pytest.raises(ProbeError, match="OCR_Tesseract_Model"):
-        await probe_modes("http://ocr:9260", "tok")
+        await probe_modes("http://ocr:29261", "tok")

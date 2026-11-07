@@ -1,8 +1,8 @@
 # Lens
 
-Image-region OCR service for Citadel extensions, with HTTP and MCP on port **8093**. Lens cuts the regions,
+Image-region OCR service for Citadel extensions, with HTTP and MCP on port **29403**. Lens cuts the regions,
 preprocesses them and keeps uploads, jobs, quota and its own result cache; **the recognition itself runs on a
-`OCR_Tesseract_Model` service** (`AI/ModelServices/OCR_Tesseract_Model`, port 9260). `fast` uses English `tessdata_fast`;
+`OCR_Tesseract_Model` service** (`AI/ModelServices/OCR_Tesseract_Model`, port 29261). `fast` uses English `tessdata_fast`;
 `accurate` uses English `tessdata_best`. **Every extraction request accepts `mode`; omission always defaults to
 `accurate`.** No GPU, LLM or hosted OCR API is involved. Accurate names a model choice, not a guarantee of fewer errors.
 
@@ -19,7 +19,7 @@ uv sync
 uv run python -m src.run
 ```
 
-3. Open `http://127.0.0.1:8093/admin/`, save a connection to the OCR_Tesseract_Model address and token, and pick it in
+3. Open `http://127.0.0.1:29403/admin/`, save a connection to the OCR_Tesseract_Model address and token, and pick it in
 **Text recognition**. **Test connection** lists the modes the service can answer. Without a saved connection extraction
 fails with a clear message and `/health` says `ready: false`. The address and token live only on the admin page, so Lens
 needs `LENS_ADMIN_PASSWORD` to be configured at all.
@@ -104,11 +104,11 @@ Run with the server started in another terminal:
 $headers = @{ 'X-Requester-Username' = 'local-test' }
 # When authentication is enabled:
 # $headers['X-Internal-Token'] = $env:INTERNAL_API_TOKEN
-$upload = Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8093/api/files' `
+$upload = Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:29403/api/files' `
     -Headers $headers -ContentType 'application/octet-stream' -InFile 'C:\images\sample.png'
 $body = @{ file_id = $upload.file_id; mode = 'accurate'; regions = @(@(10,200,875,433)); preprocess = $true } |
     ConvertTo-Json -Depth 4
-Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8093/api/extract' `
+Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:29403/api/extract' `
     -Headers $headers -ContentType 'application/json' -Body $body
 ```
 
@@ -130,7 +130,7 @@ async def main():
     if token := os.environ.get("INTERNAL_API_TOKEN"):
         headers["X-Internal-Token"] = token
     data = await asyncio.to_thread(Path("sample.png").read_bytes)
-    async with httpx.AsyncClient(base_url="http://127.0.0.1:8093", headers=headers, timeout=120) as client:
+    async with httpx.AsyncClient(base_url="http://127.0.0.1:29403", headers=headers, timeout=120) as client:
         upload = await client.post("/api/files", content=data)
         upload.raise_for_status()
         file_id = upload.json()["file_id"]
@@ -197,14 +197,14 @@ Later Armory extension entry (example only; nothing in Citadel has been changed)
   "tesseract_ocr": {
     "label": "Lens",
     "description": "CPU image OCR. Choose fast or accurate per request; default accurate.",
-    "url": "http://127.0.0.1:8093/mcp",
+    "url": "http://127.0.0.1:29403/mcp",
     "headers": {"X-Internal-Token": "${INTERNAL_API_TOKEN}"},
     "forward_requester": true
   }
 }
 ```
 
-For Compose peers on `citadel_core`, use `http://tesseract-ocr:8093/mcp` instead.
+For Compose peers on `citadel_core`, use `http://tesseract-ocr:29403/mcp` instead.
 The upload handoff must POST image bytes to this service and pass its returned
 file ID to the extension. IDs from Reader or other services are unrelated.
 Display the mode choice in Citadel when you want a user-facing choice; API/MCP
@@ -230,7 +230,7 @@ Models and uploads stay in `.data` and are not committed or packaged into source
 
 | Environment | Default | Purpose |
 | --- | --- | --- |
-| `LENS_HOST`, `LENS_PORT` | `127.0.0.1`, `8093` | Bind address |
+| `LENS_HOST`, `LENS_PORT` | `127.0.0.1`, `29403` | Bind address |
 | `INTERNAL_API_TOKEN` | empty | Required on non-loopback binds |
 | `LENS_ADMIN_PASSWORD` | empty | Admin disabled until set |
 | `LENS_MAX_UPLOAD_MB` | `10` | Per-upload byte bound |

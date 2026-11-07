@@ -1,6 +1,6 @@
 # Deploying Lens
 
-Lens is one HTTP and MCP service (image-region OCR) on port 8093. It runs no model itself: it needs a OCR_Tesseract_Model connection saved on its admin page.
+Lens is one HTTP and MCP service (image-region OCR) on port 29403. It runs no model itself: it needs a OCR_Tesseract_Model connection saved on its admin page.
 
 ## Ways to run it
 

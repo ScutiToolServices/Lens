@@ -1,6 +1,6 @@
 # Lens
 
-Image-region OCR service for Citadel extensions. The recognition runs on a `OCR_Tesseract_Model` service (`AI/ModelServices/OCR_Tesseract_Model`); Lens cuts regions and keeps uploads, jobs, quota and its result cache. Read `README.md` for API contracts and deployment.
+Image-region OCR service for Citadel extensions, with HTTP and MCP on port 29403. The recognition runs on a `OCR_Tesseract_Model` service (`AI/ModelServices/OCR_Tesseract_Model`); Lens cuts regions and keeps uploads, jobs, quota and its result cache. Read `README.md` for API contracts and deployment.
 
 ## Agent instructions
 This file is the one instruction file for every coding agent; `CLAUDE.md` only imports it (`@AGENTS.md`). Edit this file, never `CLAUDE.md`.

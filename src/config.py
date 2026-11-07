@@ -12,7 +12,7 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 @dataclass(frozen=True)
 class Settings:
     host: str = "127.0.0.1"
-    port: int = 8093
+    port: int = 29403
     internal_token: str = ""
     admin_password: str = ""
     data_dir: Path = PROJECT_DIR / ".data"
@@ -50,7 +50,7 @@ class Settings:
 def _from_environment() -> Settings:
     env = os.environ.get
     return Settings(
-        host=env("LENS_HOST", "127.0.0.1"), port=int(env("LENS_PORT", "8093")),
+        host=env("LENS_HOST", "127.0.0.1"), port=int(env("LENS_PORT", "29403")),
         internal_token=env("INTERNAL_API_TOKEN", ""), admin_password=env("LENS_ADMIN_PASSWORD", ""),
         data_dir=Path(env("LENS_DATA_DIR", str(PROJECT_DIR / ".data"))),
         max_bytes=int(float(env("LENS_MAX_UPLOAD_MB", "10")) * 1024 * 1024),

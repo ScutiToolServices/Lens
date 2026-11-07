@@ -1,6 +1,6 @@
 # Lens: without Docker, on Windows
 
-Run Lens directly with Python: one process, no load balancer, listening on `127.0.0.1:8093`.
+Run Lens directly with Python: one process, no load balancer, listening on `127.0.0.1:29403`.
 
 ## Requirements
 
@@ -21,14 +21,14 @@ uv run python -m src.run
 ## Check
 
 ```bash
-curl http://127.0.0.1:8093/health
+curl http://127.0.0.1:29403/health
 ```
 
 Then open `/admin/`, save a connection to the OCR_Tesseract_Model service under **Model services**, and press **Test connection**.
 
 ## Stop
 
-Ctrl+C in the terminal. Do not run this and the Docker stack together: both use port 8093.
+Ctrl+C in the terminal. Do not run this and the Docker stack together: both use port 29403.
 
 ## Tests
 

@@ -1,5 +1,5 @@
 @echo off
-REM Starts the Lens service on port 8093 (syncs .venv with uv on each run).
+REM Starts the Lens service on port 29403 (syncs .venv with uv on each run).
 REM LABEL: Lens Service
 REM DESCRIPTION: Image OCR HTTP and MCP tool server; recognition runs on a OCR_Tesseract_Model service.
 cd /d "%~dp0"

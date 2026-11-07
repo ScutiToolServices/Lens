@@ -75,7 +75,7 @@ async def bounded_body(request: Request, limit: int) -> bytes:
 
 CONNECT = {
     "host": "tesseract-ocr",
-    "port": 8093,
+    "port": 29403,
     "paths": [
         {
             "label": "MCP, for Armory",
@@ -283,7 +283,7 @@ def build_app(settings: Settings, engine: OcrEngine | None = None):
     if config is not None:
         register(mcp, connect=CONNECT, service="Lens", admin_password=settings.admin_password, usage=usage,
                  backends=backends, status=status, playground=PLAYGROUND,
-                 slots=[Slot("ocr", "Text recognition", "The OCR_Tesseract_Model service that runs Tesseract on its CPU. Lens cuts the regions and sends each one as an image; it holds no OCR model itself.", probe_modes, "http://127.0.0.1:9260", local=False)])
+                 slots=[Slot("ocr", "Text recognition", "The OCR_Tesseract_Model service that runs Tesseract on its CPU. Lens cuts the regions and sends each one as an image; it holds no OCR model itself.", probe_modes, "http://127.0.0.1:29261", local=False)])
         admin_lock = asyncio.Lock()
 
         @mcp.custom_route("/admin/settings", methods=["GET", "PUT"])
