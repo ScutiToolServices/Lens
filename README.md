@@ -289,6 +289,7 @@ Apache-2.0 from [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast) 
 
 ## Documentation
 
+- [Purpose: input, output and what it is for](docs/purpose.md)
 - [Admin page guide](docs/guide-web-ui.md)
 - [Deployment](deployment.md)
 - [Changelog](CHANGELOG.md)
