@@ -30,14 +30,14 @@ result cache key includes the model service's fingerprint of the model file, so 
 The service reads process environment only; it does not load a local `.env` file.
 
 The service reads process environment only; it does not load a local `.env` file.
-For authenticated use, set `INTERNAL_API_TOKEN`; `SERVICE_HOST=0.0.0.0` without it
-is refused. The default is loopback-only.
+For authenticated use, set `SERVICE_ADMIN_PASSWORD` and make one token per caller on the admin page's **Tokens** card;
+`SERVICE_HOST=0.0.0.0` without the password is refused. The default is loopback-only.
 
 ## HTTP contract
 
 All `/api/*` calls need `X-Requester-Username`; when configured, also send
 `X-Internal-Token`. The trusted Citadel server supplies requester identity.
-Clients possessing the internal token can assert usernames; do not expose that
+Clients possessing a token can assert usernames; do not expose a
 token to untrusted clients. Upload IDs are scoped to the requester, and a different
 requester's ID returns 404. Filenames are labels, never server filesystem paths.
 
@@ -103,7 +103,7 @@ Run with the server started in another terminal:
 ```powershell
 $headers = @{ 'X-Requester-Username' = 'local-test' }
 # When authentication is enabled:
-# $headers['X-Internal-Token'] = $env:INTERNAL_API_TOKEN
+# $headers['X-Internal-Token'] = $env:LENS_TOKEN   # a token made on the admin page
 $upload = Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:29403/api/files' `
     -Headers $headers -ContentType 'application/octet-stream' -InFile 'C:\images\sample.png'
 $body = @{ file_id = $upload.file_id; mode = 'accurate'; regions = @(@(10,200,875,433)); preprocess = $true } |
@@ -127,7 +127,7 @@ import httpx
 
 async def main():
     headers = {"X-Requester-Username": "local-test"}
-    if token := os.environ.get("INTERNAL_API_TOKEN"):
+    if token := os.environ.get("LENS_TOKEN"):
         headers["X-Internal-Token"] = token
     data = await asyncio.to_thread(Path("sample.png").read_bytes)
     async with httpx.AsyncClient(base_url="http://127.0.0.1:29403", headers=headers, timeout=120) as client:
@@ -198,7 +198,7 @@ Later Armory extension entry (example only; nothing in Citadel has been changed)
     "label": "Lens",
     "description": "CPU image OCR. Choose fast or accurate per request; default accurate.",
     "url": "http://127.0.0.1:29403/mcp",
-    "headers": {"X-Internal-Token": "${INTERNAL_API_TOKEN}"},
+    "headers": {"X-Internal-Token": "${LENS_TOKEN}"},
     "forward_requester": true
   }
 }
@@ -215,7 +215,7 @@ requests themselves do not open an interactive prompt.
 Set `SERVICE_ADMIN_PASSWORD`, restart, then open `/admin/`. Shared peer admin shell
 provides status, per-requester usage/errors/average latency, editable limits and
 an upload playground with fast/accurate choice. Admin API uses `X-Admin-Password`,
-separate from the ordinary internal token. Saved settings live in
+separate from the callers' tokens. Saved settings live in
 `.data/settings.json`; file access runs in worker threads. Concurrency and admitted
 job limits are marked restart-required. Retention changes apply to new uploads.
 
@@ -231,8 +231,7 @@ Models and uploads stay in `.data` and are not committed or packaged into source
 | Environment | Default | Purpose |
 | --- | --- | --- |
 | `SERVICE_HOST`, `SERVICE_PORT` | `127.0.0.1`, `29403` | Bind address |
-| `INTERNAL_API_TOKEN` | empty | Required on non-loopback binds |
-| `SERVICE_ADMIN_PASSWORD` | empty | Admin disabled until set |
+| `SERVICE_ADMIN_PASSWORD` | empty | Unlocks `/admin/`, where you make the callers' tokens, and turns token checks on for `/mcp` and `/api/*`. Required when `SERVICE_HOST` is not loopback. Empty = no page and no checks (loopback only). |
 | `SERVICE_MAX_UPLOAD_MB` | `10` | Per-upload byte bound |
 | `SERVICE_MAX_PIXELS` | `16000000` | Decoded pixel bound |
 | `SERVICE_MAX_REGIONS` | `32` | Boxes per extraction, schema maximum 256 |
@@ -249,7 +248,6 @@ own limit. Network server connection concurrency is capped at 32.
 ## Docker deployment
 
 ```powershell
-$env:INTERNAL_API_TOKEN = 'choose-a-service-token'
 $env:SERVICE_ADMIN_PASSWORD = 'choose-an-admin-password'
 docker compose up -d --build
 ```

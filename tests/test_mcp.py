@@ -16,6 +16,7 @@ import uvicorn
 from src.app import build_app
 from src.config import Settings
 from tests.test_core import FakeEngine, image_bytes
+from tests.seed import seed_token
 
 TOKEN = {"X-Internal-Token": "test-token"}
 
@@ -26,7 +27,7 @@ def running_server(tmp_path):
     with socket.socket() as socket_probe:
         socket_probe.bind(("127.0.0.1", 0))
         port = socket_probe.getsockname()[1]
-    app = build_app(Settings(data_dir=tmp_path, port=port, internal_token="test-token"), engine)
+    app = build_app(seed_token(Settings(data_dir=tmp_path, port=port, admin_password="test-admin"), "test-token"), engine)
     server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()

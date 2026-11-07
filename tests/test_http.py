@@ -10,13 +10,14 @@ from src.app import build_app
 from src.config import Settings
 from src.errors import Unavailable
 from tests.test_core import FakeEngine, image_bytes
+from tests.seed import seed_token
 
 ANN = {"X-Internal-Token": "test-token", "X-Requester-Username": "ann"}
 
 
 @pytest.fixture
 def settings(tmp_path):
-    return Settings(data_dir=tmp_path, internal_token="test-token", admin_password="test-admin")
+    return seed_token(Settings(data_dir=tmp_path, admin_password="test-admin"), "test-token")
 
 
 def upload(client):

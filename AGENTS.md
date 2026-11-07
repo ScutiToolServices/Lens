@@ -17,7 +17,7 @@ This file is the one instruction file for every coding agent; `CLAUDE.md` only i
 - Each OCR call names its mode explicitly (`RemoteOcrEngine` in `src/engine.py` sends it as a query option). The model service address and token are the `ocr` slot saved on the admin page (`.data/backends.json`, never sent back, read on every call); there is no environment variable for them and no local engine, so `SERVICE_ADMIN_PASSWORD` is needed to configure it. The cache key includes the service's fingerprint of the model file.
 - Keep OCR behind `OcrEngine`; file, SQLite, Pillow and the blocking model-service calls run in threads. Cancellation drains active threads before releasing CPU slots or closing images.
 - Streaming emits completed regions, not individual words. Final results preserve input order.
-- Upload ownership comes from HTTP `X-Requester-Username` or MCP `_meta.requester.username`; internal token protects both transports. Public errors contain no filesystem paths or backend exception text.
+- Upload ownership comes from HTTP `X-Requester-Username` or MCP `_meta.requester.username`; a token from the admin page protects both transports. Public errors contain no filesystem paths or backend exception text.
 - `src/runtime.py`, `src/admin_api.py`, and shared web assets originate in sibling Reader. Keep unchanged shared copies compatible; service-specific options belong in `options.py` and playground descriptors in `app.py`.
 - Lens installs no model. Weights, the Tesseract program and the license notices live in `OCR_Tesseract_Model`. Runtime data stays untracked.
 - Citadel extension registration is documented, not performed by this project.

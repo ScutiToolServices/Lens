@@ -24,7 +24,8 @@ from src.contract import ExtractRequest, ExtractResult, Mode, Region
 from src.engine import OcrEngine, RemoteOcrEngine, probe_modes
 from src.errors import OCRError, TooLarge, Unavailable
 from src.identity import owner_from_context
-from src.middleware import InternalTokenMiddleware
+from src.middleware import TokenMiddleware
+from src.tokens import TokenStore
 from src.options import make_config, snapshot
 from src.service import OCRService
 from src.store import Store
@@ -112,10 +113,11 @@ CONNECT = {
 
 
 def build_app(settings: Settings, engine: OcrEngine | None = None):
-    if settings.exposed_without_token:
-        raise ValueError("An internal token is required when SERVICE_HOST is not loopback.")
+    if settings.exposed_without_auth:
+        raise ValueError("SERVICE_ADMIN_PASSWORD is required when SERVICE_HOST is not loopback (it unlocks the token page).")
     config = make_config(settings)
     backends = Backends(settings.state_dir / "backends.json")
+    tokens = TokenStore(settings.state_dir / "tokens.json", "lens_")
     engine = engine or RemoteOcrEngine(backends)
     service = OCRService(settings, engine, Store(settings.data_dir / "ocr.sqlite3"), config)
     usage = Usage()
@@ -282,7 +284,7 @@ def build_app(settings: Settings, engine: OcrEngine | None = None):
 
     if config is not None:
         register(mcp, connect=CONNECT, service="Lens", admin_password=settings.admin_password, usage=usage,
-                 backends=backends, status=status, playground=PLAYGROUND,
+                 backends=backends, tokens=tokens, status=status, playground=PLAYGROUND,
                  slots=[Slot("ocr", "Text recognition", "The OCR_Tesseract_Model service that runs Tesseract on its CPU. Lens cuts the regions and sends each one as an image; it holds no OCR model itself.", probe_modes, "http://127.0.0.1:29261", local=False)])
         admin_lock = asyncio.Lock()
 
@@ -310,5 +312,5 @@ def build_app(settings: Settings, engine: OcrEngine | None = None):
     app.state.ocr_usage = usage
     if config is not None:
         app.router.routes.append(Mount("/admin", StaticFiles(directory=PROJECT_DIR / "web", html=True)))
-    app.add_middleware(InternalTokenMiddleware, token=settings.internal_token)
+    app.add_middleware(TokenMiddleware, tokens=tokens if settings.admin_password else None)
     return app

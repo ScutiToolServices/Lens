@@ -1,6 +1,6 @@
 # Lens image-region OCR MCP server.
 # Start:  docker compose up -d --build        (armory reaches it at http://tesseract-ocr:29403/mcp)
-# Needs a .env next to this file with INTERNAL_API_TOKEN (same value as Citadel's); see .env.example.
+# Needs a .env next to this file with SERVICE_ADMIN_PASSWORD; create the callers' tokens on /admin/. See .env.example.
 # Recognition runs in OCR_Tesseract_Model (AI/ModelServices/OCR_Tesseract_Model); save its address and token as a connection on the admin page.
 
 name: tesseract-ocr
@@ -10,8 +10,7 @@ services:
     build: .
     restart: unless-stopped
     environment:
-      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?set INTERNAL_API_TOKEN for this service}
-      SERVICE_ADMIN_PASSWORD: ${SERVICE_ADMIN_PASSWORD:-}
+      SERVICE_ADMIN_PASSWORD: ${SERVICE_ADMIN_PASSWORD:?set SERVICE_ADMIN_PASSWORD in .env (it unlocks the token page)}
       SERVICE_CONCURRENCY: ${SERVICE_CONCURRENCY:-2}
       SERVICE_MAX_JOBS: ${SERVICE_MAX_JOBS:-4}
       SERVICE_TIMEOUT_S: ${SERVICE_TIMEOUT_S:-110}

@@ -8,12 +8,13 @@ from pathlib import Path
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 
+LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
+
 
 @dataclass(frozen=True)
 class Settings:
     host: str = "127.0.0.1"
     port: int = 29403
-    internal_token: str = ""
     admin_password: str = ""
     data_dir: Path = PROJECT_DIR / ".data"
     config_dir: Path | None = None  # set when the data folder was moved: the folder that keeps settings.json
@@ -43,15 +44,16 @@ class Settings:
         return self.config_dir or self.data_dir
 
     @property
-    def exposed_without_token(self):
-        return self.host not in {"localhost", "127.0.0.1", "::1"} and not self.internal_token
+    def exposed_without_auth(self) -> bool:
+        """Listening beyond loopback with no admin password means no tokens, so anything that can reach the port could call every tool."""
+        return not self.admin_password.strip() and self.host not in LOOPBACK_HOSTS
 
 
 def _from_environment() -> Settings:
     env = os.environ.get
     return Settings(
         host=env("SERVICE_HOST", "127.0.0.1"), port=int(env("SERVICE_PORT", "29403")),
-        internal_token=env("INTERNAL_API_TOKEN", ""), admin_password=env("SERVICE_ADMIN_PASSWORD", ""),
+        admin_password=env("SERVICE_ADMIN_PASSWORD", ""),
         data_dir=Path(env("SERVICE_DATA_DIR", str(PROJECT_DIR / ".data"))),
         max_bytes=int(float(env("SERVICE_MAX_UPLOAD_MB", "10")) * 1024 * 1024),
         max_pixels=int(env("SERVICE_MAX_PIXELS", "16000000")), max_regions=int(env("SERVICE_MAX_REGIONS", "32")),
