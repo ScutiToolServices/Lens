@@ -51,7 +51,7 @@ rem so the password is asked once.
 :push
 set "DRY="
 if /i "%~1"=="--dry-run" set "DRY=1"
-set "LIST=%TEMP%\reader_push.txt"
+set "LIST=%TEMP%\lens_push.txt"
 type nul > "%LIST%"
 set /a COUNT=0
 call :add ".env"
