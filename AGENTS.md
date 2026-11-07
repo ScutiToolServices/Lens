@@ -1,6 +1,6 @@
 # Lens
 
-Image-region OCR service for Citadel extensions. The recognition runs on a `TesseractModel` service (`AI/ModelServices/TesseractModel`); Lens cuts regions and keeps uploads, jobs, quota and its result cache. Read `README.md` for API contracts and deployment.
+Image-region OCR service for Citadel extensions. The recognition runs on a `OCR_Tesseract_Model` service (`AI/ModelServices/OCR_Tesseract_Model`); Lens cuts regions and keeps uploads, jobs, quota and its result cache. Read `README.md` for API contracts and deployment.
 
 ## Agent instructions
 This file is the one instruction file for every coding agent; `CLAUDE.md` only imports it (`@AGENTS.md`). Edit this file, never `CLAUDE.md`.
@@ -19,7 +19,7 @@ This file is the one instruction file for every coding agent; `CLAUDE.md` only i
 - Streaming emits completed regions, not individual words. Final results preserve input order.
 - Upload ownership comes from HTTP `X-Requester-Username` or MCP `_meta.requester.username`; internal token protects both transports. Public errors contain no filesystem paths or backend exception text.
 - `src/runtime.py`, `src/admin_api.py`, and shared web assets originate in sibling Reader. Keep unchanged shared copies compatible; service-specific options belong in `options.py` and playground descriptors in `app.py`.
-- Lens installs no model. Weights, the Tesseract program and the license notices live in `TesseractModel`. Runtime data stays untracked.
+- Lens installs no model. Weights, the Tesseract program and the license notices live in `OCR_Tesseract_Model`. Runtime data stays untracked.
 - Citadel extension registration is documented, not performed by this project.
 - Behaviour changes update `README.md`, `deployment.md`, the guides in `docs/`, `.env.example`, `AGENTS.md` and `CHANGELOG.md` in the same commit.
 - Commit with the noreply author email `214214011+scutiii2@users.noreply.github.com` (another address is rejected on push). Push `main`, then run `python tools/publish_live.py`. Build Docker only when the Dockerfile or the dependencies changed.

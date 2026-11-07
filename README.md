@@ -2,7 +2,7 @@
 
 Image-region OCR service for Citadel extensions, with HTTP and MCP on port **8093**. Lens cuts the regions,
 preprocesses them and keeps uploads, jobs, quota and its own result cache; **the recognition itself runs on a
-`TesseractModel` service** (`AI/ModelServices/TesseractModel`, port 9260). `fast` uses English `tessdata_fast`;
+`OCR_Tesseract_Model` service** (`AI/ModelServices/OCR_Tesseract_Model`, port 9260). `fast` uses English `tessdata_fast`;
 `accurate` uses English `tessdata_best`. **Every extraction request accepts `mode`; omission always defaults to
 `accurate`.** No GPU, LLM or hosted OCR API is involved. Accurate names a model choice, not a guarantee of fewer errors.
 
@@ -11,7 +11,7 @@ Extension registration is a later step.
 
 ## Setup
 
-1. Run a `TesseractModel` service, create a token for Lens on its `/admin/`, and press **Download new weights** there.
+1. Run a `OCR_Tesseract_Model` service, create a token for Lens on its `/admin/`, and press **Download new weights** there.
 2. Run Lens from `D:\User\Documents\Programming\AI\ToolServices\Lens` with `LENS_ADMIN_PASSWORD` set:
 
 ```powershell
@@ -19,7 +19,7 @@ uv sync
 uv run python -m src.run
 ```
 
-3. Open `http://127.0.0.1:8093/admin/`, save a connection to the TesseractModel address and token, and pick it in
+3. Open `http://127.0.0.1:8093/admin/`, save a connection to the OCR_Tesseract_Model address and token, and pick it in
 **Text recognition**. **Test connection** lists the modes the service can answer. Without a saved connection extraction
 fails with a clear message and `/health` says `ready: false`. The address and token live only on the admin page, so Lens
 needs `LENS_ADMIN_PASSWORD` to be configured at all.
@@ -256,7 +256,7 @@ docker compose up -d --build
 
 The external `citadel_core` network must exist (start Citadel stack first, or
 create that network for standalone testing). The image holds no OCR program or model, runs as an unprivileged user,
-and mounts `ocr_data` for runtime uploads, settings and the saved model connection. The TesseractModel service must be
+and mounts `ocr_data` for runtime uploads, settings and the saved model connection. The OCR_Tesseract_Model service must be
 reachable from the container (join its network, or use a host address). Default published port is loopback-only; set
 `LENS_BIND` for your deployment.
 
@@ -285,7 +285,7 @@ confidence, cache, quota, expiry, thread limits and cancellation.
 
 Lens ships no model. The English weights, their pinned hashes and the license notices (`MODEL-LICENSE.txt`, `docs/model-notice.md`,
 Apache-2.0 from [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast) and
-[tessdata_best](https://github.com/tesseract-ocr/tessdata_best)) belong to `AI/ModelServices/TesseractModel`.
+[tessdata_best](https://github.com/tesseract-ocr/tessdata_best)) belong to `AI/ModelServices/OCR_Tesseract_Model`.
 
 ## Documentation
 

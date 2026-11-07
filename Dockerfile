@@ -17,5 +17,5 @@ RUN uv sync --frozen --no-dev --no-editable
 USER ocr
 
 EXPOSE 8093
-# No OCR runs here: save a TesseractModel connection on the admin page.
+# No OCR runs here: save a OCR_Tesseract_Model connection on the admin page.
 CMD ["python", "-m", "src.run"]

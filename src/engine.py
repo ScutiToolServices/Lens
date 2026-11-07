@@ -1,4 +1,4 @@
-"""OCR behind a small replaceable engine interface: crops go to a TesseractModel service chosen on the admin page."""
+"""OCR behind a small replaceable engine interface: crops go to a OCR_Tesseract_Model service chosen on the admin page."""
 
 from collections.abc import Mapping
 import io
@@ -140,5 +140,5 @@ async def probe_modes(url: str, token: str) -> str:
         modes = reply.json()["modes"]
         ready = sorted(mode for mode, row in modes.items() if row.get("available"))
     except (ValueError, KeyError, TypeError, AttributeError):
-        raise ProbeError("That address does not look like a TesseractModel service.") from None
+        raise ProbeError("That address does not look like a OCR_Tesseract_Model service.") from None
     return "Reachable; ready modes: " + (", ".join(ready) if ready else "none (install the model files)") + "."

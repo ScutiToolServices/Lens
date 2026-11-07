@@ -1,4 +1,4 @@
-"""The remote engine talks to a TesseractModel service through the saved "ocr" slot; no real Tesseract is needed."""
+"""The remote engine talks to a OCR_Tesseract_Model service through the saved "ocr" slot; no real Tesseract is needed."""
 
 import json
 
@@ -109,5 +109,5 @@ async def test_probe_reports_the_ready_modes(monkeypatch):
     assert "accurate, fast" in await probe_modes("http://ocr:9260", "tok")
     bad = httpx.MockTransport(lambda request: httpx.Response(200, json={"nope": 1}))
     monkeypatch.setattr("src.admin_api.httpx.AsyncClient", lambda **kwargs: real(transport=bad))
-    with pytest.raises(ProbeError, match="TesseractModel"):
+    with pytest.raises(ProbeError, match="OCR_Tesseract_Model"):
         await probe_modes("http://ocr:9260", "tok")

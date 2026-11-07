@@ -5,7 +5,7 @@ Run Lens directly with Python: one process, no load balancer, listening on `127.
 ## Requirements
 
 - Windows with uv (`winget install astral-sh.uv`).
-- A running TesseractModel service and a token for Lens made on its `/admin/` page.
+- A running OCR_Tesseract_Model service and a token for Lens made on its `/admin/` page.
 
 ## Start
 
@@ -24,7 +24,7 @@ uv run python -m src.run
 curl http://127.0.0.1:8093/health
 ```
 
-Then open `/admin/`, save a connection to the TesseractModel service under **Model services**, and press **Test connection**.
+Then open `/admin/`, save a connection to the OCR_Tesseract_Model service under **Model services**, and press **Test connection**.
 
 ## Stop
 
