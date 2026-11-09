@@ -2,8 +2,6 @@
 
 **Kind:** image regions → text
 
-**Group:** OCR
-
 **Tags:** `cpu`, `mcp`, `http`, `streaming`
 
 | | |
