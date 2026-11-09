@@ -23,3 +23,4 @@ This file is the one instruction file for every coding agent; `CLAUDE.md` only i
 - Citadel extension registration is documented, not performed by this project.
 - Behaviour changes update `README.md`, `deployment.md`, the guides in `docs/`, `.env.example`, `AGENTS.md` and `CHANGELOG.md` in the same commit.
 - Commit with the noreply author email `214214011+scutiii2@users.noreply.github.com` (another address is rejected on push). Push `main`, then run `python tools/publish_live.py`. Build Docker only when the Dockerfile or the dependencies changed.
+- Shared admin files (`web/index.html`, `web/playground.js`, `src/admin_api.py`, `src/tokens.py`, `src/middleware.py`, `tests/test_admin_api.py`, `tests/test_tokens.py`, `tests/seed.py`, `tools/check_sync.py`) are byte-identical in the five tool services. Run `python tools/check_sync.py` after changing one; it must exit 0.

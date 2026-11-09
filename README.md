@@ -30,7 +30,7 @@ result cache key includes the model service's fingerprint of the model file, so 
 The service reads process environment only; it does not load a local `.env` file.
 
 The service reads process environment only; it does not load a local `.env` file.
-For authenticated use, set `SERVICE_ADMIN_PASSWORD` and make one token per caller on the admin page's **Tokens** card;
+For authenticated use, set `SERVICE_ADMIN_PASSWORD` and make one token per caller on the admin page's **Access tokens** page;
 `SERVICE_HOST=0.0.0.0` without the password is refused. The default is loopback-only.
 
 ## HTTP contract
@@ -210,16 +210,15 @@ file ID to the extension. IDs from Reader or other services are unrelated.
 Display the mode choice in Citadel when you want a user-facing choice; API/MCP
 requests themselves do not open an interactive prompt.
 
-## Admin and operational parity
+## Admin page
 
-Set `SERVICE_ADMIN_PASSWORD`, restart, then open `/admin/`. Shared peer admin shell
-provides status, per-requester usage/errors/average latency, editable limits and
-an upload playground with fast/accurate choice. Admin API uses `X-Admin-Password`,
-separate from the callers' tokens. Saved settings live in
-`.data/settings.json`; file access runs in worker threads. Concurrency and admitted
-job limits are marked restart-required. Retention changes apply to new uploads.
+With `SERVICE_ADMIN_PASSWORD` set, open `/admin/` and sign in. The shared sidebar has **Overview**, **Playground**, **Access tokens**, **Model connections**, **Runtime & settings**, **Usage** and **Connect & API**. Each page has a direct URL hash. The sidebar collapses to an icon rail and remembers its display preference in this browser.
 
-The model-service section has one slot, `ocr`, with a saved connection list (shared with Reader's admin page). No unused remote GPU/LLM connectors were added. Usage resets on restart.
+The Text recognition slot calls OCR_Tesseract_Model. Both fast and accurate modes must be available for readiness; accurate never falls back to fast. Lens holds no OCR model.
+
+Overview reads `/health` and the service status. Usage shows calls, errors and average time per requester, and resets on restart. Model connections keeps slot test/save/reset and reusable named connections. Runtime & settings saves options and marks those needing a restart. Access tokens creates and revokes caller tokens; Connect & API lists addresses and endpoints with Copy buttons. Admin authentication remains separate from public request tokens. See [the web UI guide](docs/guide-web-ui.md).
+
+## Operational notes
 
 Uploads and completed cached results are scoped to requester and retained for
 24 hours. Quota counts uploaded bytes plus cached JSON. Duplicate uploads reuse
