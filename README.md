@@ -212,7 +212,7 @@ requests themselves do not open an interactive prompt.
 
 ## Admin page
 
-With `SERVICE_ADMIN_PASSWORD` set, open `/admin/` and sign in. The shared sidebar has **Overview**, **Playground**, **Access tokens**, **Model connections**, **Runtime & settings**, **Usage** and **Connect & API**. Each page has a direct URL hash. The sidebar collapses to an icon rail and remembers its display preference in this browser.
+With `SERVICE_ADMIN_PASSWORD` set, open `/admin/` and sign in. The service tabs include **Overview**, **Playground**, **Access tokens**, **Model connections**, **Runtime & settings**, **Usage** and **Connections**. Each tab has a direct URL hash.
 
 The Text recognition slot calls OCR_Tesseract_Model. Both fast and accurate modes must be available for readiness; accurate never falls back to fast. Lens holds no OCR model.
 
