@@ -1,0 +1,36 @@
+# Lens image-region OCR MCP server.
+# Start:  docker compose up -d --build        (armory reaches it at http://tesseract-ocr:29403/mcp)
+# Needs a .env next to this file with SERVICE_ADMIN_PASSWORD; create the callers' tokens on /admin/. See .env.example.
+# Recognition runs in OCR_Tesseract_Model (AI/ModelServices/OCR_Tesseract_Model); save its address and token as a connection on the admin page.
+
+name: tesseract-ocr
+
+services:
+  tesseract-ocr:
+    build: .
+    restart: unless-stopped
+    environment:
+      SERVICE_ADMIN_PASSWORD: ${SERVICE_ADMIN_PASSWORD:?set SERVICE_ADMIN_PASSWORD in .env (it unlocks the token page)}
+      SERVICE_CONCURRENCY: ${SERVICE_CONCURRENCY:-2}
+      SERVICE_MAX_JOBS: ${SERVICE_MAX_JOBS:-4}
+      SERVICE_TIMEOUT_S: ${SERVICE_TIMEOUT_S:-110}
+    ports:
+      - "${SERVICE_BIND:-127.0.0.1}:${SERVICE_PORT:-29403}:29403"
+    volumes:
+      - ocr_data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:29403/health')"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+    networks: [citadel]
+
+volumes:
+  ocr_data:
+
+networks:
+  # Join the Citadel stack's network so armory/ember_api can reach http://tesseract-ocr:29403. Start the Citadel stack first:
+  # it creates this network.
+  citadel:
+    name: citadel_core
+    external: true
